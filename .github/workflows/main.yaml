@@ -5,4 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Hello World
-        run: echo "Hello World"
+        run: |
+          echo "Hello World"
+          echo "Another message on a new line"
