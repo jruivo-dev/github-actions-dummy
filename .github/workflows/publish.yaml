@@ -1,0 +1,120 @@
+name: Publish NuGet Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionSuffix:
+        description: 'Optional version suffix (e.g. beta1)'
+        required: false
+  push:
+    branches: [ develop, master ]
+    paths:
+      - 'src/**'
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-nuget
+  cancel-in-progress: false
+
+env:
+  buildConfiguration: Release
+
+jobs:
+  build-pack:
+    name: Build & Pack
+    runs-on: ubuntu-latest
+    outputs:
+      PACKAGE_VERSION: ${{ steps.set_version.outputs.PACKAGE_VERSION }}
+    env:
+      buildConfiguration: Release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: GitVersion Setup
+        uses: gittools/actions/gitversion/setup@v1
+        with:
+          versionSpec: '5.x'
+
+      - name: GitVersion Execute
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v1
+        with:
+          useConfigFile: true
+          configFilePath: .github/GitVersion.yml
+
+      - name: Compute Package Version
+        id: set_version
+        run: |
+          VERSION="${{ steps.gitversion.outputs.NuGetVersionV2 }}"
+          if [ -n "${{ github.event.inputs.versionSuffix }}" ]; then
+            BASE="${{ steps.gitversion.outputs.MajorMinorPatch }}"
+            VERSION="${BASE}-${{ github.event.inputs.versionSuffix }}"
+          fi
+          echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Resolved package version: $VERSION"
+
+      # - name: Restore
+      #   working-directory: src
+      #   run: dotnet restore --configfile ../.github/NuGet.config
+
+      # - name: Build
+      #   working-directory: src
+      #   run: dotnet build --configuration "$buildConfiguration" --no-restore --configfile ../.github/NuGet.config
+      # - name: Pack
+      #   working-directory: src
+      #   run: |
+      #     VERSION='${{ steps.set_version.outputs.PACKAGE_VERSION }}'
+      #     PROJECTS=(
+      #       Intermedia.ContactCenter.EventBus.Abstractions/Intermedia.ContactCenter.EventBus.Abstractions.csproj
+      #       Intermedia.ContactCenter.EventBus.RabbitMqStreams/Intermedia.ContactCenter.EventBus.RabbitMqStreams.csproj
+      #       Intermedia.ContactCenter.EventBus.OutboxPublisher/Intermedia.ContactCenter.EventBus.OutboxPublisher.csproj
+      #     )
+      #     mkdir -p artifacts
+      #     for proj in "${PROJECTS[@]}"; do
+      #       echo "Packing $proj version $VERSION"
+      #       dotnet pack "$proj" -c "$buildConfiguration" -p:PackageVersion=$VERSION -p:Version=$VERSION -o ./artifacts --configfile ../.github/NuGet.config
+      #     done
+      #     ls -1 artifacts
+
+      # - name: Upload Packages
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: nuget-artifacts
+      #     path: src/artifacts/*.nupkg
+
+  publish:
+    name: Publish
+    needs: build-pack
+    runs-on: ubuntu-latest
+    steps:
+    #   - name: Download Packages
+    #     uses: actions/download-artifact@v4
+    #     with:
+    #       name: nuget-artifacts
+    #       path: artifacts
+
+      # - name: Push Packages
+      #   env:
+      #     NUGET_API_KEY: ${{ secrets.NEXUS_CC_NUGET_API_KEY }}
+      #     NUGET_SOURCE: ${{ vars.NEXUS_CC_NUGET }}
+      #   run: >-
+      #     dotnet nuget push "artifacts/*.nupkg" --api-key "$NUGET_API_KEY" --source "$NUGET_SOURCE" --skip-duplicate
+
+      - name: Summary
+        run: |
+          echo "✅ Published packages version ${{ needs.build-pack.outputs.PACKAGE_VERSION }}"
+          echo "📦 Branch: ${GITHUB_REF_NAME}"
+          echo "🏷️  GitVersion output: ${{ needs.build-pack.outputs.PACKAGE_VERSION }}"
+          case "${GITHUB_REF_NAME}" in
+            "master")   echo "🚀 Production release published" ;;
+            "develop")  echo "🧪 Alpha prerelease published" ;;
+            "devops")   echo "⚙️  DevOps build published" ;;
+            *)          echo "🔧 Branch build published" ;;
+          esac
