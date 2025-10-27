@@ -1,0 +1,44 @@
+mode: ContinuousDelivery
+next-version: 0.1.0
+tag-prefix: '[vV]'
+continuous-delivery-fallback-tag: ci
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatch
+commit-message-incrementing: Enabled
+ignore:
+  sha: []
+# Safe default if a branch doesn't match anything below
+increment: Patch
+branches:
+  # Production line. Only changes via PRs (merges) land here.
+  master:
+    regex: ^master$
+    tag: ''                       # stable, no prerelease tag
+    increment: Patch              # if something lands straight on master (e.g., hotfix PR), default bump is Patch
+    tracks-release-branches: true
+  # Integration line. Always targeting the next minor.
+  develop:
+    regex: ^develop$
+    tag: alpha                    # prereleases of the next minor
+    increment: Minor
+    source-branches: [ master ]
+  # Stabilization line. Can be cut from develop (next minor) or from master (patch-only release).
+  release:
+    regex: ^release[/-].*$
+    tag: rc                       # release candidate builds
+    is-release-branch: true
+    increment: None               # freeze base version; only rc/build metadata increments
+    source-branches: [ develop, master ]
+  # Feature work. PRs from here typically go into develop.
+  feature:
+    regex: ^feature[/-].*$
+    tag: alpha
+    increment: Minor
+    source-branches: [ develop, master ]
+  # PR builds inherit the target branch version, but are marked as PR prereleases.
+  pull-request:
+    regex: ^(pull|pull\-request|pr)[/-].*$
+    tag: pr
+    increment: Inherit            # inherit bump rules from the target branch
+    track-merge-target: true      # version is calculated from the PR target (develop/release/master)
+    source-branches: [ master, develop, release, feature ]
