@@ -46,7 +46,7 @@ jobs:
         uses: gittools/actions/gitversion/execute@v1
         with:
           useConfigFile: true
-          configFilePath: .github/GitVersion.yml
+          configFilePath: .github/GitVersionNew.yml
 
       - name: Compute Package Version
         id: set_version
