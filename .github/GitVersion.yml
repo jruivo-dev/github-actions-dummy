@@ -12,16 +12,18 @@ increment: Patch  # Default if branch doesn't match anything
 branches:
   master:
     regex: ^master$
-    tag: ''                   # stable release, no prerelease
-    increment: Patch          # bump patch if commits land directly on master
+    tag: ''                       # stable release, no prerelease
+    increment: Patch              # bump patch if commits land directly on master
+    source-branches: [ develop ]  # merges from develop trigger stable version
 
   develop:
     regex: ^develop$
-    tag: alpha                # prerelease alpha versions
-    increment: Minor          # bump patch for each merge to develop; keeps minor stable
-    source-branches: [ master ]
+    tag: alpha                     # prerelease alpha versions
+    increment: Minor               # bump minor for next stable series
+    source-branches: [ feature/* ] # merges from features trigger alpha increment
+
   feature:
     regex: ^feature[/-].*$
     tag: alpha
-    increment: Inherit        # inherit develop’s alpha behavior
-    source-branches: [ develop ]
+    increment: Inherit             # inherit develop’s alpha behavior
+    source-branches: [ develop ]   # features merge into develop
