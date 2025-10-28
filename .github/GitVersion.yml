@@ -7,21 +7,23 @@ assembly-file-versioning-scheme: MajorMinorPatch
 commit-message-incrementing: Enabled
 ignore:
   sha: []
-increment: Patch  # Default if branch doesn't match anything
+increment: Patch  # default if branch doesn't match anything
 
 branches:
   master:
     regex: ^master$
-    tag: ''                   # stable release, no prerelease
-    increment: Patch          # bump patch if commits land directly on master
+    tag: ''                       # stable release
+    increment: Patch
+    source-branches: [ develop ]  # merges from develop trigger stable version
 
   develop:
     regex: ^develop$
-    tag: alpha                # prerelease alpha versions
-    increment: Minor          # bump patch for each merge to develop; keeps minor stable
-    source-branches: [ master ]
+    tag: alpha                     # prerelease alpha versions
+    increment: Minor
+    source-branches: [ feature ]  # MUST match branch name type exactly
+
   feature:
     regex: ^feature[/-].*$
     tag: alpha
-    increment: Inherit        # inherit develop’s alpha behavior
+    increment: Inherit
     source-branches: [ develop ]
