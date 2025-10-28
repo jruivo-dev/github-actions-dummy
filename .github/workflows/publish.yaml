@@ -62,7 +62,7 @@ jobs:
 
   new-calculate-version:
     name: Calculate version
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: github.event_name != 'pull_request'
     outputs:
       semVer: ${{ steps.custom.outputs.semVer }}
