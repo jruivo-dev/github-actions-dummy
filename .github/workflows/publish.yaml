@@ -96,19 +96,19 @@ jobs:
           Write-Host "Version: $v"
 
 
-  publish:
-    name: Publish
-    needs: build-pack
-    runs-on: ubuntu-latest
-    steps:
-      - name: Summary
-        run: |
-          echo "✅ Published packages version ${{ needs.build-pack.outputs.PACKAGE_VERSION }}"
-          echo "📦 Branch: ${GITHUB_REF_NAME}"
-          echo "🏷️  GitVersion output: ${{ needs.build-pack.outputs.PACKAGE_VERSION }}"
-          case "${GITHUB_REF_NAME}" in
-            "master")   echo "🚀 Production release published" ;;
-            "develop")  echo "🧪 Alpha prerelease published" ;;
-            "devops")   echo "⚙️  DevOps build published" ;;
-            *)          echo "🔧 Branch build published" ;;
-          esac
+  # publish:
+  #   name: Publish
+  #   needs: build-pack
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Summary
+  #       run: |
+  #         echo "✅ Published packages version ${{ needs.build-pack.outputs.PACKAGE_VERSION }}"
+  #         echo "📦 Branch: ${GITHUB_REF_NAME}"
+  #         echo "🏷️  GitVersion output: ${{ needs.build-pack.outputs.PACKAGE_VERSION }}"
+  #         case "${GITHUB_REF_NAME}" in
+  #           "master")   echo "🚀 Production release published" ;;
+  #           "develop")  echo "🧪 Alpha prerelease published" ;;
+  #           "devops")   echo "⚙️  DevOps build published" ;;
+  #           *)          echo "🔧 Branch build published" ;;
+  #         esac
