@@ -63,7 +63,6 @@ jobs:
   new-calculate-version:
     name: Calculate version
     runs-on: gha-cc-dev-shared-dotnet
-    needs: [test-placeholder]
     if: github.event_name != 'pull_request'
     outputs:
       semVer: ${{ steps.custom.outputs.semVer }}
