@@ -18,7 +18,7 @@ branches:
   develop:
     regex: ^develop$
     tag: alpha                # prerelease alpha versions
-    increment: Patch          # bump patch for each merge to develop; keeps minor stable
+    increment: Minor          # bump patch for each merge to develop; keeps minor stable
     source-branches: [ master ]
   feature:
     regex: ^feature[/-].*$
